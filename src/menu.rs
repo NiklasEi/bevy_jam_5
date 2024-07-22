@@ -84,23 +84,16 @@ fn setup_menu(mut commands: Commands) {
 struct ChangeState(GameState);
 
 fn click_play_button(
-    mut next_state: ResMut<NextState<GameState>>,
+    mut state: ResMut<NextState<GameState>>,
     mut interaction_query: Query<
-        (
-            &Interaction,
-            &mut BackgroundColor,
-            &ButtonColors,
-            Option<&ChangeState>,
-        ),
+        (&Interaction, &mut BackgroundColor, &ButtonColors),
         (Changed<Interaction>, With<Button>),
     >,
 ) {
-    for (interaction, mut color, button_colors, change_state) in &mut interaction_query {
+    for (interaction, mut color, button_colors) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
-                if let Some(state) = change_state {
-                    next_state.set(state.0.clone());
-                }
+                state.set(GameState::Prepare);
             }
             Interaction::Hovered => {
                 *color = button_colors.hovered.into();
