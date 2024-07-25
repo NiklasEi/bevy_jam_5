@@ -1,5 +1,7 @@
 use crate::loading::{ImageAssets, TILE_SIZE};
+use crate::physics::GameLayer;
 use crate::{GameState, HEIGHT, WIDTH};
+use avian2d::prelude::*;
 use bevy::prelude::*;
 
 pub struct MapPlugin;
@@ -32,6 +34,9 @@ fn spawn_map(assets: Res<ImageAssets>, mut commands: Commands, images: Res<Asset
                         layout: assets.tilemap_layout.clone(),
                         index: 122,
                     },
+                    RigidBody::Static,
+                    Collider::rectangle(TILE_SIZE, TILE_SIZE),
+                    CollisionLayers::new(GameLayer::Ground, GameLayer::Player),
                 ));
             }
             _ => (),

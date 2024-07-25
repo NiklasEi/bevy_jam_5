@@ -1,6 +1,7 @@
 use crate::animation::{AnimationIndices, AnimationTimer};
 use crate::loading::ImageAssets;
 use crate::GameState;
+use avian2d::collision::Collider;
 use bevy::prelude::*;
 use std::time::Duration;
 
@@ -24,5 +25,6 @@ fn spawn_player(mut commands: Commands, asset: Res<ImageAssets>) {
         },
         AnimationTimer(Timer::new(Duration::from_millis(300), TimerMode::Repeating)),
         AnimationIndices { first: 4, last: 5 },
+        Collider::capsule(8., 6.0),
     ));
 }

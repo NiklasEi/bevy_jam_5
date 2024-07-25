@@ -1,12 +1,14 @@
 mod animation;
 mod loading;
 mod map;
+mod physics;
 mod player;
 
 use crate::animation::SpriteAnimationPlugin;
 use crate::loading::LoadingPlugin;
 use crate::map::MapPlugin;
 use crate::player::PlayerPlugin;
+use avian2d::prelude::*;
 use bevy::app::App;
 use bevy::app::Plugin;
 use bevy::prelude::*;
@@ -30,6 +32,8 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameState>()
             .add_plugins((
+                PhysicsPlugins::default(),
+                PhysicsDebugPlugin::default(),
                 PlayerPlugin,
                 LoadingPlugin,
                 SpriteAnimationPlugin,
