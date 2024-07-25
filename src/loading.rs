@@ -21,10 +21,10 @@ pub struct ImageAssets {
     pub tilemap_character: Handle<Image>,
     #[asset(image(sampler = nearest))]
     #[asset(path = "tilemap-backgrounds.png")]
-    pub tilemap_backgrounds: Handle<Image>,
+    pub _tilemap_backgrounds: Handle<Image>,
     #[asset(image(sampler = nearest))]
     #[asset(path = "tilemap.png")]
-    pub tilemap: Handle<Image>,
+    pub _tilemap: Handle<Image>,
 
     #[asset(texture_atlas_layout(
         tile_size_x = 24,
@@ -43,7 +43,7 @@ pub struct ImageAssets {
         padding_x = 1,
         padding_y = 1
     ))]
-    pub tilemap_backgrounds_layout: Handle<TextureAtlasLayout>,
+    pub _tilemap_backgrounds_layout: Handle<TextureAtlasLayout>,
     #[asset(texture_atlas_layout(
         tile_size_x = 18,
         tile_size_y = 18,
@@ -52,5 +52,5 @@ pub struct ImageAssets {
         padding_x = 1,
         padding_y = 1
     ))]
-    pub tilemap_layout: Handle<TextureAtlasLayout>,
+    pub _tilemap_layout: Handle<TextureAtlasLayout>,
 }

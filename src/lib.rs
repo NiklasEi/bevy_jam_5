@@ -1,6 +1,8 @@
+mod animation;
 mod loading;
 mod player;
 
+use crate::animation::SpriteAnimationPlugin;
 use crate::loading::LoadingPlugin;
 use crate::player::PlayerPlugin;
 use bevy::app::App;
@@ -25,7 +27,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameState>()
-            .add_plugins((PlayerPlugin, LoadingPlugin))
+            .add_plugins((PlayerPlugin, LoadingPlugin, SpriteAnimationPlugin))
             .add_systems(Update, start_level.run_if(in_state(GameState::Prepare)));
     }
 }

@@ -67,7 +67,6 @@ fn setup_menu(mut commands: Commands) {
                         ..Default::default()
                     },
                     button_colors,
-                    ChangeState(GameState::Playing),
                 ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
@@ -81,9 +80,6 @@ fn setup_menu(mut commands: Commands) {
                 });
         });
 }
-
-#[derive(Component)]
-struct ChangeState(GameState);
 
 fn click_play_button(
     mut state: ResMut<NextState<GameState>>,

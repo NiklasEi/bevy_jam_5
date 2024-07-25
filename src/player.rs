@@ -1,6 +1,8 @@
+use crate::animation::{AnimationIndices, AnimationTimer};
 use crate::loading::ImageAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use std::time::Duration;
 
 pub struct PlayerPlugin;
 
@@ -20,5 +22,7 @@ fn spawn_player(mut commands: Commands, asset: Res<ImageAssets>) {
             layout: asset.tilemap_character_layout.clone(),
             index: 5,
         },
+        AnimationTimer(Timer::new(Duration::from_millis(300), TimerMode::Repeating)),
+        AnimationIndices { first: 4, last: 5 },
     ));
 }
