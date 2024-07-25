@@ -33,7 +33,9 @@ struct Menu;
 
 fn setup_menu(mut commands: Commands) {
     info!("menu");
-    commands.spawn(Camera2dBundle::default());
+    let mut camera = Camera2dBundle::default();
+    camera.projection.scale = 0.5;
+    commands.spawn(camera);
     commands
         .spawn((
             NodeBundle {
