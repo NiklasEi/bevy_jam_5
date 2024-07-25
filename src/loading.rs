@@ -17,6 +17,9 @@ impl Plugin for LoadingPlugin {
 #[derive(AssetCollection, Resource)]
 pub struct ImageAssets {
     #[asset(image(sampler = nearest))]
+    #[asset(path = "map.png")]
+    pub map: Handle<Image>,
+    #[asset(image(sampler = nearest))]
     #[asset(path = "tilemap-characters.png")]
     pub tilemap_character: Handle<Image>,
     #[asset(image(sampler = nearest))]
@@ -24,7 +27,7 @@ pub struct ImageAssets {
     pub _tilemap_backgrounds: Handle<Image>,
     #[asset(image(sampler = nearest))]
     #[asset(path = "tilemap.png")]
-    pub _tilemap: Handle<Image>,
+    pub tilemap: Handle<Image>,
 
     #[asset(texture_atlas_layout(
         tile_size_x = 24,
@@ -52,5 +55,7 @@ pub struct ImageAssets {
         padding_x = 1,
         padding_y = 1
     ))]
-    pub _tilemap_layout: Handle<TextureAtlasLayout>,
+    pub tilemap_layout: Handle<TextureAtlasLayout>,
 }
+
+pub const TILE_SIZE: f32 = 18.;
