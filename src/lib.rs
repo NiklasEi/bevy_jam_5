@@ -12,6 +12,8 @@ use avian2d::prelude::*;
 use bevy::app::App;
 use bevy::app::Plugin;
 use bevy::prelude::*;
+use bevy_tnua::prelude::*;
+use bevy_tnua_avian2d::TnuaAvian2dPlugin;
 
 pub const WIDTH: f32 = 800.;
 pub const HEIGHT: f32 = 600.;
@@ -38,6 +40,8 @@ impl Plugin for GamePlugin {
                 LoadingPlugin,
                 SpriteAnimationPlugin,
                 MapPlugin,
+                TnuaControllerPlugin::default(),
+                TnuaAvian2dPlugin::default(),
             ))
             .add_systems(Update, start_level.run_if(in_state(GameState::Prepare)));
     }
