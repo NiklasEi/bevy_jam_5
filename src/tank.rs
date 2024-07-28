@@ -29,11 +29,12 @@ fn feed_tank(
     time: Res<Time>,
 ) {
     for colliding_entities in &query {
-        if !colliding_entities.is_empty() && keyboard.pressed(KeyCode::KeyF) {
-            if time.elapsed_seconds_f64() - tank_timer.0 > 1. {
-                tank.0 += 10.;
-                tank_timer.0 = time.elapsed_seconds_f64();
-            }
+        if !colliding_entities.is_empty()
+            && keyboard.pressed(KeyCode::KeyF)
+            && time.elapsed_seconds_f64() - tank_timer.0 > 1.
+        {
+            tank.0 += 10.;
+            tank_timer.0 = time.elapsed_seconds_f64();
         }
     }
 }

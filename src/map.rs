@@ -53,12 +53,9 @@ fn generate_map(image: &Image, commands: &mut Commands, assets: &ImageAssets) {
         let x = tile % 23;
         let y = tile / 23;
 
-        match value {
-            &1 => {
-                commands.spawn(tile_bundle(x, y, assets));
-            }
-            _ => (),
-        };
+        if value == &1 {
+            commands.spawn(tile_bundle(x, y, assets));
+        }
     }
 }
 
