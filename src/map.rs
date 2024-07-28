@@ -93,6 +93,20 @@ fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
             entity.add_collider();
         }
     }
+    // exit ladders
+    commands
+        .spawn((Ladder, Sensor))
+        .spawn_ship_tile(11, 11, 12, assets, None)
+        .add_collider();
+    commands
+        .spawn((Ladder, Sensor))
+        .spawn_ship_tile(43, 11, 13, assets, None)
+        .add_collider();
+    commands
+        .spawn((Ladder, Sensor))
+        .spawn_ship_tile(43, 11, 14, assets, None)
+        .add_collider();
+
     commands
         .spawn(())
         .spawn_ship_tile(106, 21, 12, assets, None)
@@ -204,6 +218,8 @@ fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
 struct MapTile;
 #[derive(Component)]
 struct Toilet;
+#[derive(Component)]
+pub(crate) struct Ladder;
 
 fn tile_bundle(x: usize, y: usize, assets: &ImageAssets) -> impl Bundle {
     (

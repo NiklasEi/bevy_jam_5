@@ -1,12 +1,17 @@
 use crate::animation::{AnimationIndices, AnimationTimer};
 use crate::loading::ImageAssets;
 use crate::GameState;
-use avian2d::collision::Collider;
+use avian2d::collision::{Collider, CollidingEntities};
+use avian2d::math::AdjustPrecision;
 use avian2d::prelude::RigidBody;
 use bevy::prelude::*;
+use bevy::time::Stopwatch;
 use bevy_tnua::builtins::{TnuaBuiltinJump, TnuaBuiltinWalk};
 use bevy_tnua::controller::{TnuaController, TnuaControllerBundle};
-use bevy_tnua::TnuaUserControlsSystemSet;
+use bevy_tnua::{
+    TnuaAction, TnuaActionContext, TnuaActionInitiationDirective, TnuaActionLifecycleDirective,
+    TnuaActionLifecycleStatus, TnuaMotor, TnuaUserControlsSystemSet,
+};
 use std::time::Duration;
 
 pub struct PlayerPlugin;
@@ -36,8 +41,12 @@ fn spawn_player(mut commands: Commands, asset: Res<ImageAssets>) {
     ));
 }
 
-fn apply_controls(keyboard: Res<ButtonInput<KeyCode>>, mut query: Query<&mut TnuaController>) {
-    let Ok(mut controller) = query.get_single_mut() else {
+fn apply_controls(
+    ladders: Query<&CollidingEntities, With<crate::map::Ladder>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
+    mut player: Query<&mut TnuaController>,
+) {
+    let Ok(mut controller) = player.get_single_mut() else {
         return;
     };
 
@@ -68,17 +77,70 @@ fn apply_controls(keyboard: Res<ButtonInput<KeyCode>>, mut query: Query<&mut Tnu
         // `TnuaBuiltinWalk` has many other fields for customizing the movement - but they have
         // sensible defaults. Refer to the `TnuaBuiltinWalk`'s documentation to learn what they do.
         acceleration: 400.,
+        desired_forward: if direction.x > 0. { Vec3::X } else { -Vec3::X },
+        air_acceleration: 200.,
         ..Default::default()
     });
 
-    // Feed the jump action every frame as long as the player holds the jump button. If the player
-    // stops holding the jump button, simply stop feeding the action.
     if keyboard.pressed(KeyCode::Space) {
         controller.action(TnuaBuiltinJump {
-            // The height is the only mandatory field of the jump button.
             height: 60.0,
-            // `TnuaBuiltinJump` also has customization fields with sensible defaults.
             ..Default::default()
         });
+    }
+
+    let climb = direction.y < 0.
+        && ladders
+            .iter()
+            .any(|colliding_entities| !colliding_entities.is_empty());
+    if controller.action_name() == Some("Ladder") || climb {
+        controller.action(LadderAction {
+            desired_velocity: if climb { Some(5.) } else { None },
+        });
+    }
+}
+
+struct LadderAction {
+    pub desired_velocity: Option<f32>,
+}
+
+impl TnuaAction for LadderAction {
+    const NAME: &'static str = "Ladder";
+    type State = ();
+    const VIOLATES_COYOTE_TIME: bool = true;
+
+    fn apply(
+        &self,
+        _state: &mut Self::State,
+        ctx: TnuaActionContext,
+        _lifecycle_status: TnuaActionLifecycleStatus,
+        motor: &mut TnuaMotor,
+    ) -> TnuaActionLifecycleDirective {
+        let Some(desired_velocity) = self.desired_velocity else {
+            return TnuaActionLifecycleDirective::Finished;
+        };
+        let up = ctx.up_direction().adjust_precision();
+
+        let velocity_on_plane = ctx
+            .tracker
+            .velocity
+            .reject_from(ctx.up_direction().adjust_precision());
+
+        let desired_boost = Vec3::Y * desired_velocity - velocity_on_plane;
+
+        let walk_acceleration = desired_boost / ctx.frame_duration;
+
+        motor.lin.cancel_on_axis(up);
+        motor.lin.acceleration = walk_acceleration;
+
+        TnuaActionLifecycleDirective::StillActive
+    }
+
+    fn initiation_decision(
+        &self,
+        _ctx: TnuaActionContext,
+        _being_fed_for: &Stopwatch,
+    ) -> TnuaActionInitiationDirective {
+        TnuaActionInitiationDirective::Allow
     }
 }
