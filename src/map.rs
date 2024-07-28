@@ -1,5 +1,6 @@
 use crate::loading::{ImageAssets, TILE_SIZE};
 use crate::physics::GameLayer;
+use crate::tank::FuelLevel;
 use crate::{GameState, HEIGHT, WIDTH};
 use avian2d::prelude::*;
 use bevy::ecs::system::EntityCommands;
@@ -13,15 +14,20 @@ impl Plugin for MapPlugin {
         app.add_systems(OnEnter(GameState::Playing), spawn_map)
             .add_systems(
                 Update,
-                (reload_map, apply_pressure_plate_colour).run_if(in_state(GameState::Playing)),
+                (reload_map, toilet_sensor, update_fuel).run_if(in_state(GameState::Playing)),
             );
     }
 }
 
-fn spawn_map(assets: Res<ImageAssets>, mut commands: Commands, images: Res<Assets<Image>>) {
+fn spawn_map(
+    assets: Res<ImageAssets>,
+    mut commands: Commands,
+    images: Res<Assets<Image>>,
+    fuel_level: Res<FuelLevel>,
+) {
     let map = images.get(&assets.map).unwrap();
     generate_map(map, &mut commands, &assets);
-    build_ship(&mut commands, &assets);
+    build_ship(&mut commands, &assets, &fuel_level);
 }
 
 fn reload_map(
@@ -56,7 +62,7 @@ fn generate_map(image: &Image, commands: &mut Commands, assets: &ImageAssets) {
     }
 }
 
-fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
+fn build_ship(commands: &mut Commands, assets: &ImageAssets, fuel_level: &FuelLevel) {
     // leg left
     commands
         .spawn(())
@@ -178,40 +184,23 @@ fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
             .spawn_ship_tile(75, 18, y, assets, None)
             .add_collider();
     }
+    // tube exit
     commands
         .spawn(())
         .spawn_ship_tile(79, 19, 5, assets, None)
         .add_collider();
     commands
         .spawn(())
-        .spawn_ship_tile(95, 19, 6, assets, None)
-        .add_collider();
-    commands
-        .spawn(())
-        .spawn_ship_tile(45, 19, 7, assets, None)
-        .add_collider();
-    commands
-        .spawn(())
         .spawn_ship_tile(79, 18, 5, assets, None)
         .add_collider();
+    // fuel splash
+    render_fuel_tank(commands, assets, fuel_level);
+
+    // tank input
     commands
-        .spawn(())
-        .spawn_ship_tile(95, 18, 6, assets, None)
+        .spawn((TankInput, Sensor))
+        .spawn_ship_tile(10, 17, 11, assets, None)
         .add_collider();
-    commands
-        .spawn(())
-        .spawn_ship_tile(45, 18, 7, assets, None)
-        .add_collider();
-    for y in 8..12 {
-        commands
-            .spawn(())
-            .spawn_ship_tile(45, 19, y, assets, None)
-            .add_collider();
-        commands
-            .spawn(())
-            .spawn_ship_tile(45, 18, y, assets, None)
-            .add_collider();
-    }
 }
 
 #[derive(Component)]
@@ -220,6 +209,8 @@ struct MapTile;
 struct Toilet;
 #[derive(Component)]
 pub(crate) struct Ladder;
+#[derive(Component)]
+pub(crate) struct TankInput;
 
 fn tile_bundle(x: usize, y: usize, assets: &ImageAssets) -> impl Bundle {
     (
@@ -305,7 +296,51 @@ impl MapCommand for EntityCommands<'_> {
     }
 }
 
-fn apply_pressure_plate_colour(mut query: Query<(&mut Sprite, &CollidingEntities), With<Toilet>>) {
+fn update_fuel(
+    mut commands: Commands,
+    assets: Res<ImageAssets>,
+    fuel_level: Res<FuelLevel>,
+    fuel_tiles: Query<Entity, With<FuelTile>>,
+) {
+    if !fuel_level.is_changed() {
+        return;
+    }
+    for entity in &fuel_tiles {
+        commands.entity(entity).despawn_recursive();
+    }
+    render_fuel_tank(&mut commands, &assets, &fuel_level);
+}
+
+#[derive(Component)]
+struct FuelTile;
+
+fn render_fuel_tank(commands: &mut Commands, assets: &ImageAssets, fuel_level: &FuelLevel) {
+    let full_blocks = (fuel_level.0.min(100.) / 20.) as usize;
+    let empty = 5 - full_blocks;
+
+    // splash
+    commands
+        .spawn(FuelTile)
+        .spawn_ship_tile(95, 19, 6 + empty, assets, None)
+        .add_collider();
+    commands
+        .spawn(FuelTile)
+        .spawn_ship_tile(95, 18, 6 + empty, assets, None)
+        .add_collider();
+    // fuel
+    for y in 6 + empty + 1..12 {
+        commands
+            .spawn(FuelTile)
+            .spawn_ship_tile(45, 19, y, assets, None)
+            .add_collider();
+        commands
+            .spawn(FuelTile)
+            .spawn_ship_tile(45, 18, y, assets, None)
+            .add_collider();
+    }
+}
+
+fn toilet_sensor(mut query: Query<(&mut Sprite, &CollidingEntities), With<Toilet>>) {
     for (mut sprite, colliding_entities) in &mut query {
         if colliding_entities.0.is_empty() {
             sprite.color = Color::srgb(0.2, 0.7, 0.9);

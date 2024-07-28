@@ -3,11 +3,15 @@ mod loading;
 mod map;
 mod physics;
 mod player;
+mod tank;
+mod ui;
 
 use crate::animation::SpriteAnimationPlugin;
 use crate::loading::LoadingPlugin;
 use crate::map::MapPlugin;
 use crate::player::PlayerPlugin;
+use crate::tank::TankPlugin;
+use crate::ui::UiPlugin;
 use avian2d::math::Vector;
 use avian2d::prelude::*;
 use bevy::app::App;
@@ -36,15 +40,18 @@ impl Plugin for GamePlugin {
             .insert_resource(Gravity(Vector::Y * -98.1))
             .add_plugins((
                 PhysicsPlugins::default().with_length_unit(10.),
-                PhysicsDebugPlugin::default(),
                 PlayerPlugin,
                 LoadingPlugin,
                 SpriteAnimationPlugin,
                 MapPlugin,
                 TnuaControllerPlugin::default(),
                 TnuaAvian2dPlugin::default(),
+                UiPlugin,
+                TankPlugin,
             ))
             .add_systems(Startup, spawn_camera);
+        #[cfg(debug_assertions)]
+        app.add_plugins(PhysicsDebugPlugin::default());
     }
 }
 
