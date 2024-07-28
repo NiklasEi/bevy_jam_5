@@ -11,7 +11,10 @@ pub struct MapPlugin;
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Playing), spawn_map)
-            .add_systems(Update, reload_map.run_if(in_state(GameState::Playing)));
+            .add_systems(
+                Update,
+                (reload_map, apply_pressure_plate_colour).run_if(in_state(GameState::Playing)),
+            );
     }
 }
 
@@ -126,11 +129,16 @@ fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
     commands
         .spawn(())
         .spawn_ship_tile(28, 3, 11, assets, Some(2))
-        .add_collider();
+        .insert((
+            Sensor,
+            Toilet,
+            RigidBody::Static,
+            Collider::rectangle(TILE_SIZE / 2., TILE_SIZE / 2.),
+            CollisionLayers::new(GameLayer::Ground, GameLayer::Player),
+        ));
     commands
         .spawn(())
-        .spawn_ship_tile(12, 3, 9, assets, Some(2))
-        .add_collider();
+        .spawn_ship_tile(12, 3, 9, assets, Some(2));
     // farm
     commands
         .spawn(())
@@ -147,7 +155,6 @@ fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
 
     // tank
     for y in 0..5 {
-        let index = 58;
         commands
             .spawn(())
             .spawn_ship_tile(75, 19, y, assets, None)
@@ -182,7 +189,6 @@ fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
         .spawn_ship_tile(45, 18, 7, assets, None)
         .add_collider();
     for y in 8..12 {
-        let index = 58;
         commands
             .spawn(())
             .spawn_ship_tile(45, 19, y, assets, None)
@@ -196,6 +202,8 @@ fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
 
 #[derive(Component)]
 struct MapTile;
+#[derive(Component)]
+struct Toilet;
 
 fn tile_bundle(x: usize, y: usize, assets: &ImageAssets) -> impl Bundle {
     (
@@ -278,5 +286,15 @@ impl MapCommand for EntityCommands<'_> {
             Collider::rectangle(TILE_SIZE, TILE_SIZE),
             CollisionLayers::new(GameLayer::Ground, GameLayer::Player),
         ))
+    }
+}
+
+fn apply_pressure_plate_colour(mut query: Query<(&mut Sprite, &CollidingEntities), With<Toilet>>) {
+    for (mut sprite, colliding_entities) in &mut query {
+        if colliding_entities.0.is_empty() {
+            sprite.color = Color::srgb(0.2, 0.7, 0.9);
+        } else {
+            sprite.color = Color::srgb(0.9, 0.7, 0.2);
+        }
     }
 }

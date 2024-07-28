@@ -43,16 +43,16 @@ fn apply_controls(keyboard: Res<ButtonInput<KeyCode>>, mut query: Query<&mut Tnu
 
     let mut direction = Vec3::ZERO;
 
-    if keyboard.pressed(KeyCode::ArrowUp) {
+    if keyboard.pressed(KeyCode::ArrowUp) || keyboard.pressed(KeyCode::KeyW) {
         direction -= Vec3::Y;
     }
-    if keyboard.pressed(KeyCode::ArrowDown) {
+    if keyboard.pressed(KeyCode::ArrowDown) || keyboard.pressed(KeyCode::KeyS) {
         direction += Vec3::Y;
     }
-    if keyboard.pressed(KeyCode::ArrowLeft) {
+    if keyboard.pressed(KeyCode::ArrowLeft) || keyboard.pressed(KeyCode::KeyA) {
         direction -= Vec3::X;
     }
-    if keyboard.pressed(KeyCode::ArrowRight) {
+    if keyboard.pressed(KeyCode::ArrowRight) || keyboard.pressed(KeyCode::KeyD) {
         direction += Vec3::X;
     }
 
@@ -67,6 +67,7 @@ fn apply_controls(keyboard: Res<ButtonInput<KeyCode>>, mut query: Query<&mut Tnu
         float_height: 12.,
         // `TnuaBuiltinWalk` has many other fields for customizing the movement - but they have
         // sensible defaults. Refer to the `TnuaBuiltinWalk`'s documentation to learn what they do.
+        acceleration: 400.,
         ..Default::default()
     });
 
@@ -75,7 +76,7 @@ fn apply_controls(keyboard: Res<ButtonInput<KeyCode>>, mut query: Query<&mut Tnu
     if keyboard.pressed(KeyCode::Space) {
         controller.action(TnuaBuiltinJump {
             // The height is the only mandatory field of the jump button.
-            height: 50.0,
+            height: 60.0,
             // `TnuaBuiltinJump` also has customization fields with sensible defaults.
             ..Default::default()
         });

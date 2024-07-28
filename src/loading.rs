@@ -9,7 +9,7 @@ impl Plugin for LoadingPlugin {
         app.add_loading_state(
             LoadingState::new(GameState::Loading)
                 .load_collection::<ImageAssets>()
-                .continue_to_state(GameState::Menu),
+                .continue_to_state(GameState::Playing),
         );
     }
 }
@@ -33,7 +33,7 @@ pub struct ImageAssets {
     pub tilemap_ship: Handle<Image>,
     #[asset(image(sampler = nearest))]
     #[asset(path = "tilemap-ship2.png")]
-    pub tilemap_ship2: Handle<Image>,
+    pub _tilemap_ship2: Handle<Image>,
 
     #[asset(texture_atlas_layout(
         tile_size_x = 24,

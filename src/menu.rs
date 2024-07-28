@@ -32,10 +32,6 @@ impl Default for ButtonColors {
 struct Menu;
 
 fn setup_menu(mut commands: Commands) {
-    info!("menu");
-    let mut camera = Camera2dBundle::default();
-    camera.projection.scale = 0.5;
-    commands.spawn(camera);
     commands
         .spawn((
             NodeBundle {
@@ -91,7 +87,7 @@ fn click_play_button(
     for (interaction, mut color, button_colors) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
-                state.set(GameState::Prepare);
+                state.set(GameState::Playing);
             }
             Interaction::Hovered => {
                 *color = button_colors.hovered.into();

@@ -8,6 +8,7 @@ use crate::animation::SpriteAnimationPlugin;
 use crate::loading::LoadingPlugin;
 use crate::map::MapPlugin;
 use crate::player::PlayerPlugin;
+use avian2d::math::Vector;
 use avian2d::prelude::*;
 use bevy::app::App;
 use bevy::app::Plugin;
@@ -23,7 +24,6 @@ pub enum GameState {
     #[default]
     Loading,
     Menu,
-    Prepare,
     Playing,
     Restart,
 }
@@ -33,8 +33,9 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<GameState>()
+            .insert_resource(Gravity(Vector::Y * -98.1))
             .add_plugins((
-                PhysicsPlugins::default(),
+                PhysicsPlugins::default().with_length_unit(10.),
                 PhysicsDebugPlugin::default(),
                 PlayerPlugin,
                 LoadingPlugin,
@@ -43,10 +44,12 @@ impl Plugin for GamePlugin {
                 TnuaControllerPlugin::default(),
                 TnuaAvian2dPlugin::default(),
             ))
-            .add_systems(Update, start_level.run_if(in_state(GameState::Prepare)));
+            .add_systems(Startup, spawn_camera);
     }
 }
 
-fn start_level(mut state: ResMut<NextState<GameState>>) {
-    state.set(GameState::Playing);
+fn spawn_camera(mut commands: Commands) {
+    let mut camera = Camera2dBundle::default();
+    camera.projection.scale = 0.5;
+    commands.spawn(camera);
 }
