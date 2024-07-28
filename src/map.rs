@@ -57,25 +57,25 @@ fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
     // leg left
     commands
         .spawn(())
-        .spawn_ship_tile(107, 1, 14, assets)
+        .spawn_ship_tile(107, 1, 14, assets, None)
         .add_collider();
     commands
         .spawn(())
-        .spawn_ship_tile(75, 1, 13, assets)
+        .spawn_ship_tile(75, 1, 13, assets, None)
         .add_collider();
     // leg right
     commands
         .spawn(())
-        .spawn_ship_tile(107, 21, 14, assets)
+        .spawn_ship_tile(107, 21, 14, assets, None)
         .add_collider();
     commands
         .spawn(())
-        .spawn_ship_tile(75, 21, 13, assets)
+        .spawn_ship_tile(75, 21, 13, assets, None)
         .add_collider();
     // platform
     commands
         .spawn(())
-        .spawn_ship_tile(103, 1, 12, assets)
+        .spawn_ship_tile(103, 1, 12, assets, None)
         .add_collider();
     for x in 2..21 {
         let index = if thread_rng().gen_bool(1. / 3.) {
@@ -85,15 +85,113 @@ fn build_ship(commands: &mut Commands, assets: &ImageAssets) {
         };
 
         let mut entity = commands.spawn(());
-        entity.spawn_ship_tile(index, x, 12, assets);
+        entity.spawn_ship_tile(index, x, 12, assets, None);
         if x != 11 {
             entity.add_collider();
         }
     }
     commands
         .spawn(())
-        .spawn_ship_tile(106, 21, 12, assets)
+        .spawn_ship_tile(106, 21, 12, assets, None)
         .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(107, 3, 13, assets, None)
+        .add_collider();
+    // side walls
+    for y in 0..12 {
+        let index = 58;
+        commands
+            .spawn(())
+            .spawn_ship_tile(index, 2, y, assets, None)
+            .add_collider();
+        commands
+            .spawn(())
+            .spawn_ship_tile(index, 20, y, assets, None)
+            .add_collider();
+    }
+    commands
+        .spawn(())
+        .spawn_ship_tile(8, 3, 0, assets, None)
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(24, 3, 1, assets, None)
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(40, 3, 2, assets, None)
+        .add_collider();
+    //toilet
+    commands
+        .spawn(())
+        .spawn_ship_tile(28, 3, 11, assets, Some(2))
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(12, 3, 9, assets, Some(2))
+        .add_collider();
+    // farm
+    commands
+        .spawn(())
+        .spawn_ship_tile(17, 6, 11, assets, None)
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(18, 7, 11, assets, None)
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(19, 8, 11, assets, None)
+        .add_collider();
+
+    // tank
+    for y in 0..5 {
+        let index = 58;
+        commands
+            .spawn(())
+            .spawn_ship_tile(75, 19, y, assets, None)
+            .add_collider();
+        commands
+            .spawn(())
+            .spawn_ship_tile(75, 18, y, assets, None)
+            .add_collider();
+    }
+    commands
+        .spawn(())
+        .spawn_ship_tile(79, 19, 5, assets, None)
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(95, 19, 6, assets, None)
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(45, 19, 7, assets, None)
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(79, 18, 5, assets, None)
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(95, 18, 6, assets, None)
+        .add_collider();
+    commands
+        .spawn(())
+        .spawn_ship_tile(45, 18, 7, assets, None)
+        .add_collider();
+    for y in 8..12 {
+        let index = 58;
+        commands
+            .spawn(())
+            .spawn_ship_tile(45, 19, y, assets, None)
+            .add_collider();
+        commands
+            .spawn(())
+            .spawn_ship_tile(45, 18, y, assets, None)
+            .add_collider();
+    }
 }
 
 #[derive(Component)]
@@ -128,6 +226,7 @@ trait MapCommand {
         x: usize,
         y: usize,
         assets: &ImageAssets,
+        scale: Option<usize>,
     ) -> &mut Self;
     fn add_collider(&mut self) -> &mut Self;
 }
@@ -139,14 +238,30 @@ impl MapCommand for EntityCommands<'_> {
         x: usize,
         y: usize,
         assets: &ImageAssets,
+        scale: Option<usize>,
     ) -> &mut Self {
         self.insert((
             SpriteBundle {
-                transform: Transform::from_xyz(
-                    2. - WIDTH / 4. + TILE_SIZE * x as f32,
-                    HEIGHT / 4. - TILE_SIZE * y as f32,
-                    0.,
-                ),
+                transform: {
+                    let mut transform = Transform::from_xyz(
+                        2. - WIDTH / 4. + TILE_SIZE * x as f32,
+                        HEIGHT / 4. - TILE_SIZE * y as f32,
+                        0.,
+                    );
+                    if let Some(scale) = scale {
+                        transform.scale = Vec3::splat(scale as f32);
+                        transform.translation = Vec3::new(
+                            2. - WIDTH / 4.
+                                + TILE_SIZE * (x - 1) as f32
+                                + (TILE_SIZE * scale as f32 + TILE_SIZE) / 2.,
+                            HEIGHT / 4.
+                                - TILE_SIZE * (y - 1) as f32
+                                - (TILE_SIZE * scale as f32 - TILE_SIZE) / 2.,
+                            0.,
+                        )
+                    }
+                    transform
+                },
                 texture: assets.tilemap_ship.clone(),
                 ..default()
             },
