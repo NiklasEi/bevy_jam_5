@@ -28,6 +28,9 @@ pub struct ImageAssets {
     #[asset(image(sampler = nearest))]
     #[asset(path = "tilemap.png")]
     pub tilemap: Handle<Image>,
+    #[asset(image(sampler = nearest))]
+    #[asset(path = "tilemap-ship.png")]
+    pub tilemap_ship: Handle<Image>,
 
     #[asset(texture_atlas_layout(
         tile_size_x = 24,
@@ -56,6 +59,15 @@ pub struct ImageAssets {
         padding_y = 1
     ))]
     pub tilemap_layout: Handle<TextureAtlasLayout>,
+    #[asset(texture_atlas_layout(
+        tile_size_x = 18,
+        tile_size_y = 18,
+        columns = 16,
+        rows = 7,
+        padding_x = 1,
+        padding_y = 1
+    ))]
+    pub tilemap_ship_layout: Handle<TextureAtlasLayout>,
 }
 
 pub const TILE_SIZE: f32 = 18.;
